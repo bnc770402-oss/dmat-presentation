@@ -1,0 +1,1188 @@
+<!doctype html>
+<html lang="zh-Hant">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>CC 指揮中心與 iDMAT 1.0 雙軌體驗流程</title>
+  <style>
+    :root {
+      color-scheme: dark;
+      --bg: #0b0f19;
+      --panel: rgba(255, 255, 255, 0.035);
+      --panel-strong: rgba(15, 23, 42, 0.9);
+      --line: rgba(0, 240, 255, 0.24);
+      --line-strong: rgba(0, 240, 255, 0.45);
+      --text: #e2e8f0;
+      --muted: #94a3b8;
+      --cyan: #00f0ff;
+      --blue: #38bdf8;
+    }
+
+    * {
+      box-sizing: border-box;
+    }
+
+    body {
+      margin: 0;
+      min-height: 100vh;
+      background:
+        radial-gradient(circle at 8% 12%, rgba(0, 240, 255, 0.14) 0%, transparent 34%),
+        radial-gradient(circle at 92% 86%, rgba(0, 100, 255, 0.12) 0%, transparent 36%),
+        var(--bg);
+      color: var(--text);
+      font-family: "Noto Sans TC", "Microsoft JhengHei", system-ui, sans-serif;
+      overflow: hidden;
+    }
+
+    .deck {
+      position: relative;
+      width: 100vw;
+      height: 100vh;
+    }
+
+    .slide {
+      position: absolute;
+      inset: 0;
+      display: none;
+      width: 100vw;
+      height: 100vh;
+      padding: 5.6vh 6.2vw;
+      background:
+        radial-gradient(circle at 10% 10%, rgba(0, 240, 255, 0.1) 0%, transparent 40%),
+        radial-gradient(circle at 90% 90%, rgba(0, 100, 255, 0.08) 0%, transparent 40%);
+      overflow: hidden;
+    }
+
+    .slide.active {
+      display: block;
+    }
+
+    .slide.vcenter.active {
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+    }
+
+    .slide.vcenter .hero-title {
+      margin-top: 0;
+    }
+
+    h1 {
+      color: var(--cyan);
+      font-size: clamp(34px, 4.1vw, 58px);
+      line-height: 1.16;
+      border-bottom: 2px solid rgba(0, 240, 255, 0.4);
+      padding-bottom: 14px;
+      margin: 0 0 24px;
+      text-shadow: 0 0 15px rgba(0, 240, 255, 0.42);
+      letter-spacing: 0;
+    }
+
+    .hero-title {
+      font-size: clamp(40px, 5.1vw, 72px);
+      margin-top: 2vh;
+      margin-bottom: 20px;
+    }
+
+    h2 {
+      color: var(--blue);
+      font-size: clamp(25px, 2.5vw, 36px);
+      line-height: 1.25;
+      margin: 0 0 14px;
+    }
+
+    .nowrap-title {
+      white-space: nowrap;
+      font-size: clamp(19px, 1.75vw, 26px);
+    }
+
+    .nowrap-caption {
+      white-space: nowrap;
+      font-size: clamp(13px, 1.08vw, 16px);
+    }
+
+    h3 {
+      color: var(--muted);
+      font-size: clamp(20px, 1.85vw, 28px);
+      font-weight: 400;
+      line-height: 1.35;
+      margin: -12px 0 24px;
+    }
+
+    p, li {
+      font-size: clamp(20px, 1.95vw, 29px);
+      line-height: 1.55;
+    }
+
+    ul, ol {
+      margin-top: 8px;
+      padding-left: 1.5em;
+    }
+
+    li {
+      margin-bottom: 10px;
+    }
+
+    strong {
+      color: var(--cyan);
+      font-weight: 800;
+    }
+
+    em {
+      color: #cbd5e1;
+      font-size: clamp(18px, 1.65vw, 24px);
+    }
+
+    .glass-panel {
+      background: var(--panel);
+      border: 1px solid rgba(0, 240, 255, 0.2);
+      border-radius: 10px;
+      padding: 22px 26px;
+      box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+      margin-top: 16px;
+    }
+
+    .badge {
+      display: inline-block;
+      background: rgba(0, 240, 255, 0.15);
+      color: var(--cyan);
+      padding: 4px 12px;
+      border-radius: 999px;
+      font-size: clamp(16px, 1.35vw, 21px);
+      border: 1px solid rgba(0, 240, 255, 0.4);
+      vertical-align: middle;
+      margin: 2px 8px 8px 0;
+      white-space: nowrap;
+    }
+
+    .two-col {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 22px;
+      align-items: stretch;
+    }
+
+    .three-col {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 18px;
+    }
+
+    .card {
+      background: rgba(15, 23, 42, 0.86);
+      border: 1px solid rgba(56, 189, 248, 0.28);
+      border-radius: 8px;
+      padding: 18px 20px;
+      min-height: 130px;
+    }
+
+    .card h2, .card h3 {
+      margin: 0 0 8px;
+    }
+
+    .muted {
+      color: var(--muted);
+    }
+
+    .small {
+      font-size: clamp(17px, 1.55vw, 23px);
+    }
+
+    .center {
+      text-align: center;
+    }
+
+    .timeline {
+      display: grid;
+      grid-template-columns: repeat(5, 1fr);
+      gap: 12px;
+      margin-top: 24px;
+    }
+
+    .timebox {
+      border-top: 5px solid var(--cyan);
+      background: var(--panel-strong);
+      border-radius: 8px;
+      padding: 15px;
+      min-height: 155px;
+    }
+
+    .timebox strong {
+      display: block;
+      margin-bottom: 6px;
+    }
+
+    .time-list {
+      margin: 4px 0 0;
+      padding-left: 1.1em;
+    }
+
+    .time-list li {
+      font-size: clamp(16px, 1.35vw, 20px);
+      line-height: 1.35;
+      margin-bottom: 3px;
+    }
+
+    .lane {
+      display: grid;
+      grid-template-columns: 1.1fr 0.18fr 1.1fr 0.18fr 1.1fr;
+      gap: 10px;
+      align-items: center;
+      margin-top: 18px;
+    }
+
+    .lane-node {
+      background: rgba(15, 23, 42, 0.88);
+      border: 1px solid rgba(0, 240, 255, 0.28);
+      border-radius: 8px;
+      padding: 18px;
+      min-height: 112px;
+    }
+
+    .arrow {
+      color: var(--cyan);
+      font-size: clamp(28px, 3vw, 42px);
+      text-align: center;
+    }
+
+    .report-flow {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      flex-wrap: wrap;
+      gap: 10px 0;
+    }
+
+    .report-flow .badge {
+      font-size: clamp(22px, 2vw, 30px);
+      padding: 7px 16px;
+      margin: 0;
+    }
+
+    .report-flow .arrow {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      font-size: clamp(48px, 4.6vw, 72px);
+      line-height: 1;
+      margin: 0 8px;
+      min-height: 1em;
+      vertical-align: middle;
+    }
+
+    .situation-card {
+      display: flex;
+      min-height: 180px;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      text-align: center;
+    }
+
+    .situation-card .badge {
+      margin-right: 0;
+    }
+
+    .situation-card h2 {
+      margin: 10px 0 0;
+    }
+
+    .photo-flow {
+      align-items: stretch;
+    }
+
+    .photo-card {
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+      min-height: 0;
+    }
+
+    .photo-card h2 {
+      margin: 0;
+      text-align: center;
+    }
+
+    .photo-card .badge {
+      align-self: center;
+      margin-right: 0;
+    }
+
+    .photo-section .footer-note {
+      left: 50%;
+      right: auto;
+      transform: translateX(-50%);
+      text-align: center;
+      white-space: nowrap;
+    }
+
+    .emphasis-note {
+      padding: 12px 24px;
+      border: 1px solid rgba(0, 240, 255, 0.55);
+      border-radius: 999px;
+      background: rgba(0, 240, 255, 0.12);
+      color: var(--cyan);
+      font-size: clamp(20px, 2vw, 30px);
+      font-weight: 800;
+      box-shadow: 0 0 24px rgba(0, 240, 255, 0.18);
+    }
+
+    .photo-frame {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      min-height: 0;
+      height: min(44vh, 360px);
+      padding: 10px;
+      border: 1px solid rgba(0, 240, 255, 0.18);
+      border-radius: 8px;
+      background: rgba(2, 6, 23, 0.38);
+    }
+
+    .photo-frame img {
+      display: block;
+      width: 100%;
+      height: 100%;
+      object-fit: contain;
+    }
+
+    .visual-page {
+      padding-bottom: 14vh;
+    }
+
+    .visual-frame {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      height: min(56vh, 500px);
+      padding: 14px;
+      border: 1px solid rgba(0, 240, 255, 0.22);
+      border-radius: 10px;
+      background: rgba(2, 6, 23, 0.42);
+      box-shadow: 0 12px 34px rgba(0, 0, 0, 0.26);
+    }
+
+    .visual-frame img {
+      display: block;
+      width: 100%;
+      height: 100%;
+      object-fit: contain;
+    }
+
+    .field-note {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 10px;
+      flex-wrap: wrap;
+      width: max-content;
+      max-width: 88vw;
+    }
+
+    .field-note .badge {
+      margin: 0;
+      font-size: clamp(17px, 1.5vw, 23px);
+      background: rgba(2, 6, 23, 0.42);
+    }
+
+    .glow-note {
+      border-color: rgba(0, 240, 255, 0.72);
+      background: rgba(0, 240, 255, 0.16);
+      text-shadow: 0 0 14px rgba(0, 240, 255, 0.5);
+      box-shadow:
+        0 0 18px rgba(0, 240, 255, 0.28),
+        0 0 42px rgba(0, 240, 255, 0.18);
+    }
+
+    .matrix {
+      display: grid;
+      grid-template-columns: 0.8fr 1fr 1fr 1fr;
+      gap: 8px;
+      margin-top: 18px;
+    }
+
+    .matrix div {
+      border: 1px solid rgba(148, 163, 184, 0.25);
+      padding: 12px;
+      border-radius: 7px;
+      background: rgba(15, 23, 42, 0.78);
+      font-size: clamp(16px, 1.45vw, 22px);
+      line-height: 1.45;
+    }
+
+    .matrix .head {
+      color: var(--cyan);
+      font-weight: 800;
+      background: rgba(0, 240, 255, 0.1);
+    }
+
+    .org {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 14px;
+      margin-top: 22px;
+    }
+
+    .org .role {
+      background: rgba(15, 23, 42, 0.88);
+      border: 1px solid rgba(56, 189, 248, 0.3);
+      border-radius: 8px;
+      padding: 16px;
+      min-height: 140px;
+    }
+
+    .role-title {
+      color: var(--cyan);
+      font-weight: 800;
+      margin-bottom: 8px;
+      font-size: clamp(19px, 1.7vw, 25px);
+    }
+
+    .role-list {
+      margin: 0;
+      padding-left: 1.15em;
+    }
+
+    .role-list li {
+      font-size: clamp(17px, 1.55vw, 23px);
+      line-height: 1.4;
+      margin-bottom: 4px;
+    }
+
+    .flow-vertical {
+      display: grid;
+      grid-template-columns: 1fr;
+      gap: 10px;
+    }
+
+    .flow-row {
+      display: grid;
+      grid-template-columns: 0.6fr 1fr 1fr;
+      gap: 12px;
+      align-items: stretch;
+    }
+
+    .flow-cell {
+      background: rgba(15, 23, 42, 0.82);
+      border: 1px solid rgba(56, 189, 248, 0.25);
+      border-radius: 8px;
+      padding: 13px 16px;
+      font-size: clamp(18px, 1.7vw, 25px);
+      line-height: 1.45;
+    }
+
+    .footer-note {
+      position: absolute;
+      left: 6.2vw;
+      bottom: 5vh;
+      color: #64748b;
+      font-size: clamp(16px, 1.35vw, 20px);
+    }
+
+    .center-footer-note {
+      left: 50%;
+      right: auto;
+      transform: translateX(-50%);
+      text-align: center;
+      width: max-content;
+      max-width: 86vw;
+    }
+
+    .controls {
+      position: fixed;
+      right: 24px;
+      bottom: 18px;
+      z-index: 20;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      background: rgba(2, 6, 23, 0.78);
+      border: 1px solid rgba(148, 163, 184, 0.24);
+      border-radius: 999px;
+      padding: 8px 10px;
+      backdrop-filter: blur(8px);
+    }
+
+    .controls button {
+      width: 38px;
+      height: 38px;
+      border-radius: 999px;
+      border: 1px solid rgba(0, 240, 255, 0.25);
+      background: rgba(0, 240, 255, 0.1);
+      color: var(--cyan);
+      font-size: 20px;
+      cursor: pointer;
+    }
+
+    .controls button:hover {
+      background: rgba(0, 240, 255, 0.2);
+    }
+
+    .pager {
+      min-width: 64px;
+      text-align: center;
+      color: #cbd5e1;
+      font-size: 15px;
+      font-variant-numeric: tabular-nums;
+    }
+
+    @media (max-width: 880px) {
+      body {
+        overflow: auto;
+      }
+
+      .deck {
+        height: auto;
+      }
+
+      .slide {
+        position: relative;
+        display: block;
+        min-height: 100vh;
+        height: auto;
+        padding: 48px 24px 92px;
+        overflow: visible;
+      }
+
+      .slide:not(.active) {
+        display: none;
+      }
+
+      .slide.vcenter.active {
+        display: flex;
+      }
+
+      .two-col,
+      .three-col,
+      .timeline,
+      .org,
+      .lane,
+      .flow-row {
+        grid-template-columns: 1fr;
+      }
+
+      .arrow {
+        transform: rotate(90deg);
+      }
+
+      .matrix {
+        grid-template-columns: 1fr;
+      }
+
+      .footer-note {
+        position: static;
+        margin-top: 24px;
+      }
+    }
+
+    @media print {
+      body {
+        overflow: visible;
+        background: var(--bg);
+      }
+
+      .deck {
+        height: auto;
+      }
+
+      .slide,
+      .slide:not(.active) {
+        position: relative;
+        display: block;
+        width: 100vw;
+        height: 100vh;
+        page-break-after: always;
+      }
+
+      .slide.vcenter,
+      .slide.vcenter:not(.active) {
+        display: flex;
+        flex-direction: column;
+        justify-content: center;
+      }
+
+      .controls {
+        display: none;
+      }
+    }
+  </style>
+</head>
+<body>
+  <main class="deck" aria-live="polite">
+    <section class="slide vcenter active">
+      <h1 class="hero-title">CC 指揮中心與 iDMAT 1.0<br>雙軌體驗流程</h1>
+      <div class="three-col">
+        <div class="card">
+          <span class="badge">2 小時</span>
+          <h2>雙軌輪替</h2>
+          <p class="small">CC 協調中心與 iDMAT 現場醫療同步進行，中場交換。</p>
+        </div>
+        <div class="card">
+          <span class="badge">64 人</span>
+          <h2>四組操作</h2>
+          <p class="small">A、B、C、D 四組分流，減少等待，增加實作密度。</p>
+        </div>
+        <div class="card">
+          <span class="badge">20250923</span>
+          <h2 class="nowrap-title">光復馬太鞍溪堰塞湖溢流</h2>
+          <p class="small">以溢流事件作為共同情境，串接前線醫療與後方協調任務。</p>
+        </div>
+      </div>
+
+      <div class="footer-note">今天你是前線的醫護也是在後台支援前線的協調中心</div>
+    </section>
+
+    <section class="slide vcenter">
+      <h1>第一階段：活動總覽與動線說明</h1>
+      <h3>破冰與全局觀</h3>
+
+      <div class="glass-panel">
+        <p><strong>體驗核心目標</strong></p>
+        <ul>
+          <li><strong>目標一：</strong> 練習協調中心（CC）災時醫療需求評估的垂直與橫向分工。</li>
+          <li><strong>目標二：</strong> 精準資源調度，依據受災程度派遣適合的急性期「醫療隊」與災區進入慢性期「醫療機構」進駐災點。</li>
+        </ul>
+        <p><em>備註：控制組將模擬外援隊伍報到，並接受CC協調中心的任務指派。</em></p>
+      </div>
+    </section>
+
+    <section class="slide vcenter">
+      <h1>兩小時雙軌體驗時間軸</h1>
+      <h3>Core Timeline</h3>
+
+      <div class="timeline">
+        <div class="timebox">
+          <strong>00:00-00:10</strong>
+          <span class="badge">哈囉大家好</span>
+          <ul class="time-list">
+            <li>體驗流程說明</li>
+            <li>場地規則</li>
+          </ul>
+        </div>
+        <div class="timebox">
+          <strong>00:10-01:00</strong>
+          <span class="badge">前半場</span>
+          <p class="small">A/B：CC 協調中心<br>C/D：iDMAT 體驗操作</p>
+        </div>
+        <div class="timebox">
+          <strong>01:00-01:10</strong>
+          <span class="badge">換空間</span>
+          <p class="small">人員移動交換場地，設備與教具留在原處。</p>
+        </div>
+        <div class="timebox">
+          <strong>01:10-02:00</strong>
+          <span class="badge">後半場</span>
+          <p class="small">C/D：CC 協調中心<br>A/B：iDMAT 體驗操作</p>
+        </div>
+        <div class="timebox">
+          <strong>02:00</strong>
+          <span class="badge">體驗結束</span>
+          <ul class="time-list">
+            <li>回收成果</li>
+            <li>重點回饋</li>
+            <li>補充系統操作疑問</li>
+          </ul>
+        </div>
+      </div>
+
+    </section>
+
+    <section class="slide vcenter">
+      <h1>雙軌動線與交換機制</h1>
+      <h3>A/B/C/D 四組分流</h3>
+
+      <div class="lane">
+        <div class="lane-node">
+          <strong>A、B 組</strong><br>
+          前半場：CC 協調中心<br>
+          <span class="muted small">小木屋會議室</span>
+        </div>
+        <div class="arrow">→</div>
+        <div class="lane-node center">
+          <strong>中場換空間</strong><br>
+          <span class="badge">人員動</span><span class="badge">設備不動</span>
+        </div>
+        <div class="arrow">→</div>
+        <div class="lane-node">
+          <strong>A、B 組</strong><br>
+          後半場：iDMAT 體驗操作<br>
+          <span class="muted small">手工教室</span>
+        </div>
+      </div>
+
+      <div class="lane">
+        <div class="lane-node">
+          <strong>C、D 組</strong><br>
+          前半場：iDMAT 體驗操作<br>
+          <span class="muted small">手工教室</span>
+        </div>
+        <div class="arrow">→</div>
+        <div class="lane-node center">
+          <strong>共同情境</strong><br>
+          <span class="muted nowrap-caption">0923 光復馬太鞍溪堰塞湖溢流事件</span>
+        </div>
+        <div class="arrow">→</div>
+        <div class="lane-node">
+          <strong>C、D 組</strong><br>
+          後半場：CC 協調中心<br>
+          <span class="muted small">小木屋會議室</span>
+        </div>
+      </div>
+    </section>
+
+    <section class="slide">
+      <h1>體驗流程角色分工</h1>
+      <h3>Role Map</h3>
+
+      <div class="two-col">
+        <div class="card">
+          <h2>雲林縣衛生醫療聯隊</h2>
+          <p>擔任 CC 協調中心人員及醫療隊，是本次體驗的核心主角。</p>
+          <span class="badge">決策</span>
+          <span class="badge">部署</span>
+          <span class="badge">回報</span>
+        </div>
+        <div class="card">
+          <h2>控制組</h2>
+          <p>掌控演練節奏、投放災情資訊，並扮演外援醫療隊伍。</p>
+          <span class="badge">節奏</span>
+          <span class="badge">情境</span>
+          <span class="badge">壓力測試</span>
+        </div>
+      </div>
+
+      <div class="org">
+        <div class="role">
+          <div class="role-title">CC 協調中心</div>
+          <ul class="role-list">
+            <li>整合災情</li>
+            <li>判斷需求</li>
+            <li>規劃派遣</li>
+          </ul>
+        </div>
+        <div class="role">
+          <div class="role-title">醫療隊</div>
+          <ul class="role-list">
+            <li>依任務前往熱區</li>
+            <li>回報現場醫療需求</li>
+          </ul>
+        </div>
+        <div class="role">
+          <div class="role-title">外援隊伍</div>
+          <p class="small">由控制組扮演，接受 3-5 分鐘任務簡報。</p>
+        </div>
+        <div class="role">
+          <div class="role-title">系統後台</div>
+          <ul class="role-list">
+            <li>登打傷患資料</li>
+            <li>登打處置與後送資料</li>
+            <li>完成每日報表書寫</li>
+          </ul>
+        </div>
+      </div>
+
+      <div class="footer-note center-footer-note emphasis-note field-note glow-note">
+        <strong>簡報提醒</strong>
+        <span class="badge">控制組模板</span>
+        <span class="badge">依欄位填重點</span>
+        <span class="badge">不需自行製作</span>
+      </div>
+    </section>
+
+    <section class="slide vcenter">
+      <h1>第二階段：CC 指揮中心部署體驗</h1>
+      <h3>戰略決策 / 0923 光復馬太鞍溪溢流事件</h3>
+
+      <div class="flow-vertical">
+        <div class="flow-row">
+          <div class="flow-cell"><strong>1. 接收情資</strong></div>
+          <div class="flow-cell">災情圖片、文字通報、地圖資訊</div>
+          <div class="flow-cell">建立 災情戰情版</div>
+        </div>
+        <div class="flow-row">
+          <div class="flow-cell"><strong>2. 視覺化</strong></div>
+          <div class="flow-cell">比對災點、道路、醫療據點</div>
+          <div class="flow-cell">標出災情熱區</div>
+        </div>
+        <div class="flow-row">
+          <div class="flow-cell"><strong>3. 匹配量能</strong></div>
+          <div class="flow-cell">醫療隊人力、後勤、醫院專科與床數與災區交通距離</div>
+          <div class="flow-cell">形成部署方案</div>
+        </div>
+        <div class="flow-row">
+          <div class="flow-cell"><strong>4. 任務簡報</strong></div>
+          <div class="flow-cell">整理已知受災情資與派遣任務</div>
+          <div class="flow-cell">完成對外援隊伍 3-5 分鐘交接</div>
+        </div>
+      </div>
+    </section>
+
+    <section class="slide vcenter photo-section">
+      <h1>任務卡讓分工可執行</h1>
+      <h3>先完成分工，再閱讀任務卡</h3>
+
+      <div class="two-col photo-flow">
+        <div class="glass-panel photo-card">
+          <span class="badge">1</span>
+          <h2>完成 CC 分工</h2>
+          <div class="photo-frame">
+            <img src="photo/分工圖.png" alt="CC 分工圖">
+          </div>
+        </div>
+        <div class="glass-panel photo-card">
+          <span class="badge">2</span>
+          <h2>閱讀任務卡</h2>
+          <div class="photo-frame">
+            <img src="photo/任務卡.png" alt="任務卡">
+          </div>
+        </div>
+      </div>
+
+      <div class="footer-note center-footer-note emphasis-note field-note glow-note">
+        <strong>重點</strong>
+        <span class="badge">避免多人同時處理同一件事</span>
+      </div>
+    </section>
+
+    <section class="slide vcenter">
+      <h1>CC 體驗狀況題</h1>
+      <h3>三大狀況類型，四題即時研判</h3>
+
+      <div class="two-col">
+        <div class="card situation-card">
+          <span class="badge">人力協調</span>
+          <h2>在地志願者管理</h2>
+        </div>
+        <div class="card situation-card">
+          <span class="badge">公共溝通</span>
+          <h2>輿論處理</h2>
+        </div>
+        <div class="card situation-card">
+          <span class="badge">環境衛生</span>
+          <h2>環境衛生</h2>
+        </div>
+        <div class="card situation-card">
+          <span class="badge">公共溝通</span>
+          <h2>民眾觀感</h2>
+        </div>
+      </div>
+    </section>
+
+    <section class="slide">
+      <h1>決策第一步：情資視覺化</h1>
+      <h3>表格與地圖比對</h3>
+
+      <div class="lane">
+        <div class="lane-node">
+          <strong>災情圖片</strong><br>
+          <span class="muted small">淹水、受困點、醫療需求</span>
+        </div>
+        <div class="arrow">→</div>
+        <div class="lane-node">
+          <strong>實體地圖</strong><br>
+          <span class="muted small">定位災點、路線、醫療資源距離</span>
+        </div>
+        <div class="arrow">→</div>
+        <div class="lane-node">
+          <strong>災情熱區</strong><br>
+          <span class="muted small">形成可討論、可派遣的區域判斷</span>
+        </div>
+      </div>
+
+      <div class="matrix">
+        <div class="head">區域</div>
+        <div class="head">受災情形</div>
+        <div class="head">醫療需求</div>
+        <div class="head">優先序</div>
+        <div>熱區 A</div>
+        <div>道路阻斷、居民受困</div>
+        <div>急症評估、慢病用藥</div>
+        <div>高</div>
+        <div>熱區 B</div>
+        <div>淹水退去、通行受限</div>
+        <div>巡迴醫療、後送評估</div>
+        <div>中</div>
+        <div>熱區 C</div>
+        <div>零星通報、資訊不足</div>
+        <div>待查證</div>
+        <div>待定</div>
+      </div>
+    </section>
+
+    <section class="slide visual-page">
+      <h1>災區情資怎麼視覺化？</h1>
+      <h3>小技巧：先把受災區域表格化</h3>
+
+      <div class="visual-frame">
+        <img src="photo/14.svg?v=202604290858" alt="災區情資表格化示意圖">
+      </div>
+
+      <div class="footer-note center-footer-note emphasis-note field-note">
+        <strong>表列重點</strong>
+        <span class="badge">受災區域</span>
+        <span class="badge">交通狀況</span>
+        <span class="badge">基礎設施</span>
+        <span class="badge">受傷人數</span>
+      </div>
+    </section>
+
+    <section class="slide vcenter visual-page">
+      <h1>怎麼判斷醫療隊該去哪裡？</h1>
+
+      <div class="visual-frame">
+        <img src="photo/15.svg?v=202604290858" alt="醫療隊派遣判斷表格示意圖">
+      </div>
+
+      <div class="footer-note center-footer-note emphasis-note field-note glow-note">
+        <strong>分析重點</strong>
+        <span class="badge">受災區域表</span>
+        <span class="badge">人員清冊</span>
+        <span class="badge">後勤量能</span>
+      </div>
+    </section>
+
+    <section class="slide vcenter">
+      <h1>決策第二步：災區需求與醫療量能匹配</h1>
+      <h3>請在災區地圖上下棋部署</h3>
+
+      <div class="three-col">
+        <div class="card">
+          <h2>災區</h2>
+          <p>受災情形、醫療需求熱區、道路可近性。</p>
+        </div>
+        <div class="card">
+          <h2>醫療隊量能</h2>
+          <p>醫護人力、後勤資源、可執行任務型態。</p>
+        </div>
+        <div class="card">
+          <h2>醫療機構量能</h2>
+          <p>專科清冊、收治病床數、與災區距離。</p>
+        </div>
+      </div>
+
+      <div class="glass-panel center report-flow">
+        <span class="badge">需求</span>
+        <span class="arrow">→</span>
+        <span class="badge">量能</span>
+        <span class="arrow">→</span>
+        <span class="badge">距離</span>
+        <span class="arrow">→</span>
+        <span class="badge">派遣任務</span>
+      </div>
+    </section>
+
+    <section class="slide vcenter">
+      <h1>任務指派與簡報交付</h1>
+      <h3>Briefing Protocol</h3>
+
+      <div class="two-col">
+        <div class="glass-panel">
+          <h2>醫療隊抵達前</h2>
+          <ul>
+            <li>CC 整理已知受災情資。</li>
+            <li>填入公版簡報。</li>
+            <li>確認任務區域、路線與回報方式。</li>
+          </ul>
+        </div>
+        <div class="glass-panel">
+          <h2>醫療隊抵達後</h2>
+          <ul>
+            <li>向外援隊伍進行 <strong>3-5分鐘</strong> 任務簡報。</li>
+            <li>說明災區全貌與優先任務。</li>
+            <li>確認前線掌握資訊後出發。</li>
+          </ul>
+        </div>
+      </div>
+
+      <div class="glass-panel center">
+        <strong>跟醫療隊簡報最重要的是：</strong>目前已知什麼、最需要你們去哪裡、到了之後先做什麼、如何回報，CC跟各醫療隊每天幾點要開會。
+      </div>
+    </section>
+
+    <section class="slide vcenter">
+      <h1>第三階段：iDMAT 1.0 資訊系統體驗</h1>
+      <h3>模擬執行現場醫療流程</h3>
+
+      <div class="lane">
+        <div class="lane-node center">
+          <strong>檢傷</strong><br>
+          <span class="badge">Triage</span>
+          <p class="small">掃描 QR Code 手圈，建立或讀取傷患資料。</p>
+        </div>
+        <div class="arrow">→</div>
+        <div class="lane-node center">
+          <strong>治療</strong><br>
+          <span class="badge">Treatment</span>
+          <p class="small">依傷情卡操作處置，完成數位病歷登錄。</p>
+        </div>
+        <div class="arrow">→</div>
+        <div class="lane-node center">
+          <strong>後送</strong><br>
+          <span class="badge">Transport</span>
+          <p class="small">記錄後送目的地與狀態，支援後台統計。</p>
+        </div>
+      </div>
+
+      <div class="glass-panel">
+        <strong>現場提醒：</strong>想知道傷患的處置情形，掃一次手圈即可顯示完整歷程。
+      </div>
+    </section>
+
+    <section class="slide vcenter">
+      <h1>科技輔助：iDMAT APP 與 QR Code</h1>
+      <h3>Digital Workflow</h3>
+
+      <div class="flow-vertical">
+        <div class="flow-row">
+          <div class="flow-cell"><strong>手機 APP</strong></div>
+          <div class="flow-cell">學員以 iDMAT 1.0 APP 執行現場操作。</div>
+          <div class="flow-cell">請確認已於 4/29 前完成下載。</div>
+        </div>
+        <div class="flow-row">
+          <div class="flow-cell"><strong>QR Code 手圈</strong></div>
+          <div class="flow-cell">每位傷患有專屬識別。</div>
+          <div class="flow-cell">降低紙本轉錄錯誤。</div>
+        </div>
+        <div class="flow-row">
+          <div class="flow-cell"><strong>數位病歷</strong></div>
+          <div class="flow-cell">檢傷、治療、後送歷程可追蹤。</div>
+          <div class="flow-cell">支援後台即時查閱。</div>
+        </div>
+      </div>
+    </section>
+
+    <section class="slide">
+      <h1>大數據中心與每日報表</h1>
+      <h3>MDS Data Analysis</h3>
+
+      <div class="two-col">
+        <div class="glass-panel">
+          <h2>後台查閱</h2>
+          <ul>
+            <li>控制組登入系統後台。</li>
+            <li>引導學員查看剛輸入的即時報表。</li>
+            <li>觀察傷患數、處置狀態與後送分布。</li>
+          </ul>
+        </div>
+        <div class="glass-panel">
+          <h2>每日報表</h2>
+          <ul>
+            <li>依後台資料填寫每日災情醫療報表。</li>
+            <li>練習將現場紀錄轉為決策資訊。</li>
+            <li>確認資料缺口與回報需求。</li>
+          </ul>
+        </div>
+      </div>
+
+      <div class="glass-panel center report-flow">
+        <span class="badge">現場輸入</span>
+        <span class="arrow">→</span>
+        <span class="badge">後台統計</span>
+        <span class="arrow">→</span>
+        <span class="badge">每日報表</span>
+        <span class="arrow">→</span>
+        <span class="badge">下一輪決策</span>
+      </div>
+    </section>
+
+    <section class="slide vcenter">
+      <h1>進階情境提問</h1>
+      <h3>壓力測試</h3>
+
+      <div class="three-col">
+        <div class="card">
+          <h2>情境一</h2>
+          <p>特定國籍傷患目前在哪裡？是否已完成後送？</p>
+        </div>
+        <div class="card">
+          <h2>情境二</h2>
+          <p>原定後送醫院滿載，現場如何改派？</p>
+        </div>
+        <div class="card">
+          <h2>情境三</h2>
+          <p>熱區新增慢性病用藥需求，CC 如何補派資源？</p>
+        </div>
+      </div>
+
+      <div class="glass-panel">
+        <strong>目的：</strong>考驗對系統數據的掌握度，以及高壓下將資訊轉為決策的臨場反應。
+      </div>
+    </section>
+
+    <section class="slide vcenter">
+      <h1>結尾：把流程串成一個閉環</h1>
+      <h3>From Coordination to Field Feedback</h3>
+
+      <div class="lane">
+        <div class="lane-node center">
+          <strong>CC 判讀</strong><br>
+          <span class="muted small">災情、需求、量能</span>
+        </div>
+        <div class="arrow">→</div>
+        <div class="lane-node center">
+          <strong>任務派遣</strong><br>
+          <span class="muted small">醫療隊與醫療機構部署</span>
+        </div>
+        <div class="arrow">→</div>
+        <div class="lane-node center">
+          <strong>現場回報</strong><br>
+          <span class="muted small">iDMAT 登錄與後台報表</span>
+        </div>
+      </div>
+
+      <div class="glass-panel center">
+        <h2>今天練習的核心：讓資訊流得動，讓資源派得準，讓現場回得來。</h2>
+      </div>
+    </section>
+  </main>
+
+  <nav class="controls" aria-label="簡報控制">
+    <button type="button" id="prev" aria-label="上一頁">‹</button>
+    <div class="pager" id="pager">1 / 15</div>
+    <button type="button" id="next" aria-label="下一頁">›</button>
+  </nav>
+
+  <script>
+    const slides = Array.from(document.querySelectorAll(".slide"));
+    const pager = document.querySelector("#pager");
+    const prev = document.querySelector("#prev");
+    const next = document.querySelector("#next");
+    let index = 0;
+
+    function showSlide(nextIndex) {
+      index = Math.max(0, Math.min(slides.length - 1, nextIndex));
+      slides.forEach((slide, i) => {
+        slide.classList.toggle("active", i === index);
+      });
+      pager.textContent = `${index + 1} / ${slides.length}`;
+      prev.disabled = index === 0;
+      next.disabled = index === slides.length - 1;
+      window.scrollTo(0, 0);
+    }
+
+    prev.addEventListener("click", () => showSlide(index - 1));
+    next.addEventListener("click", () => showSlide(index + 1));
+
+    document.addEventListener("keydown", (event) => {
+      if (event.key === "ArrowRight" || event.key === "PageDown" || event.key === " ") {
+        event.preventDefault();
+        showSlide(index + 1);
+      }
+      if (event.key === "ArrowLeft" || event.key === "PageUp") {
+        event.preventDefault();
+        showSlide(index - 1);
+      }
+      if (event.key === "Home") {
+        event.preventDefault();
+        showSlide(0);
+      }
+      if (event.key === "End") {
+        event.preventDefault();
+        showSlide(slides.length - 1);
+      }
+    });
+
+    showSlide(0);
+  </script>
+</body>
+</html>
